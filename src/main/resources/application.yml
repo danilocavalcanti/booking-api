@@ -1,0 +1,25 @@
+spring:
+
+  datasource:
+    driverClassName: org.h2.Driver
+    username: username
+    password: password
+
+  jpa:
+    database: H2
+    database-platform: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+    hibernate:
+      hbm2ddl: 
+        auto: create-drop
+
+  h2:
+    console:
+      enabled: true
+      path: /h2
+name: Local
+
+booking:
+  maximum-length-of-stay: 3
+  maximum-start-date-days-range: 30
+  minimum-start-date-days-range: 1
