@@ -14,7 +14,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -37,7 +36,7 @@ public class Booking {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Room room;
 	
-	@OneToOne(optional = false)
+	@ManyToOne(fetch = FetchType.LAZY)
 	private User user;
 	
 	@Column(nullable = false)

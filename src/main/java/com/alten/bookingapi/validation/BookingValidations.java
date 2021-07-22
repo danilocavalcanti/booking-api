@@ -10,6 +10,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,39 +38,40 @@ public class BookingValidations {
 	private BookingRepository repository;
 	
 	/**
-	 * Perform validations for a booking's creation
+	 * Perform validations for a bookings creations
 	 * 
 	 * @param bookin
 	 * @throws BusinessException 
 	 */
 	@Transactional(propagation = Propagation.REQUIRED)
-	public void creation(Booking booking) throws BusinessException {
+	public void validateCreation(Booking booking) throws BusinessException {
 		
 		validateLengthOfStay(booking);
 		
 		validateStartDate(booking);
 		
-		validateDateAvailability(booking);
+		validateDatesAvailability(booking, false);
 	}
 	
 	/**
-	 * Perform validations for a booking's update
+	 * Perform validations for a bookings updates
 	 * 
 	 * @param booking
 	 * @throws BusinessException 
 	 */
 	@Transactional(propagation = Propagation.REQUIRED)
-	public void update(Booking booking) throws BusinessException {
+	public void validateUpdate(Booking booking) throws BusinessException {
 		
 		validateLengthOfStay(booking);
 		
 		validateStartDate(booking);
 		
-		validateUpdateDateAvailability(booking);
+		validateDatesAvailability(booking, true);
 	}
 	
 	/**
 	 * Validate if the length of stay of the reservation is valid.
+	 * maximumLengthOfStay - 1 considering the first day.
 	 * 
 	 * @param booking
 	 * @throws BusinessException
@@ -78,12 +80,12 @@ public class BookingValidations {
 		
 		long lengthOfStay = ChronoUnit.DAYS.between(booking.getStartDate(), booking.getEndDate());
 		
-		if (lengthOfStay > maximumLengthOfStay) throw new BusinessException(Set.of("The maximum length of stay limit of " + maximumLengthOfStay + " day(s) has been surpassed"));
+		if (lengthOfStay > maximumLengthOfStay - 1) throw new BusinessException(Set.of("The maximum length of stay limit of " + maximumLengthOfStay + " day(s) has been surpassed"));
 	}
 	
 	/**
 	 * Validate if the start date is valid.
-	 * 
+	 * Days between - 1 considering the first day.
 	 * @param booking
 	 * @throws BusinessException
 	 */
@@ -97,29 +99,24 @@ public class BookingValidations {
 	}
 	
 	/**
-	 * Validate if the room is available during the given period.
+	 * Validate if the room is available during the given period when creating or when updating an existing booking.
 	 * 
 	 * @param booking
 	 * @throws BusinessException
 	 */
-	@Transactional(propagation = Propagation.REQUIRED)
-	private void validateDateAvailability(Booking booking) throws BusinessException {
+	@Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE)
+	private void validateDatesAvailability(Booking booking, boolean isUpdate) throws BusinessException {
 		
-		if (repository.findByPeriod(booking.getRoom().getId(), booking.getStartDate(), booking.getEndDate()).isPresent())
-			throw new BusinessException("The room is unvailable for the given period");
-	}
-	
-	/**
-	 * Validate if the room is available during the given period when updating an existing booking.
-	 * 
-	 * @param booking
-	 * @throws BusinessException
-	 */
-	@Transactional(propagation = Propagation.REQUIRED)
-	private void validateUpdateDateAvailability(Booking booking) throws BusinessException {
-		
-		if (repository.findByPeriod(booking.getId(), booking.getRoom().getId(), booking.getStartDate(), booking.getEndDate()).isPresent())
-			throw new BusinessException("The room is unvailable for the given period");
+		if (isUpdate) {
+			
+			if (repository.findByPeriod(booking.getId(), booking.getRoom().getId(), booking.getStartDate(), booking.getEndDate()).isPresent())
+				throw new BusinessException("The room is unvailable for the given period");
+			
+		} else {
+			
+			if (repository.findByPeriod(booking.getRoom().getId(), booking.getStartDate(), booking.getEndDate()).isPresent())
+				throw new BusinessException("The room is unvailable for the given period");
+		}
 	}
 
 }

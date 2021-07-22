@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -111,7 +112,7 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	@Override
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	@Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
 	public ResponseEntity<BookingResponseBody> create(BookingRequestBody booking) throws GenericException, BusinessException {
 		
 		log.info("Creating a new booking...");
@@ -122,7 +123,7 @@ public class BookingServiceImpl implements BookingService {
 			
 			Booking entity = booking.toEntity();
 			
-			validations.creation(entity);
+			validations.validateCreation(entity);
 			
 			entity.setStatus(BookingStatus.ACTIVE);
 			
@@ -145,7 +146,7 @@ public class BookingServiceImpl implements BookingService {
 	}
 	
 	@Override
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	@Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
 	public ResponseEntity<BookingResponseBody> update(Long id, BookingRequestBody booking) throws GenericException, BusinessException {
 		
 		log.info("Updating booking with id " + id);
@@ -158,9 +159,9 @@ public class BookingServiceImpl implements BookingService {
 			
 			Booking entity = booking.toEntity();
 			
-			validations.update(entity);
-			
 			entity.setId(id);
+
+			validations.validateUpdate(entity);
 			
 			Booking newBooking = repository.save(entity);
 			

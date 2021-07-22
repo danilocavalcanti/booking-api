@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -27,6 +28,7 @@ import com.alten.bookingapi.body.request.BookingRequestBody;
 import com.alten.bookingapi.body.response.BookingResponseBody;
 import com.alten.bookingapi.exception.BusinessException;
 import com.alten.bookingapi.exception.GenericException;
+import com.alten.bookingapi.model.BookingRepository;
 import com.alten.bookingapi.model.BookingStatus;
 import com.alten.bookingapi.service.BookingService;
 import com.alten.bookingapi.util.DateUtil;
@@ -51,22 +53,33 @@ public class BookingTests extends BookingApiApplicationTests {
 	@Autowired
 	private BookingService service;
 	
+	@Autowired
+	private BookingRepository repository;
+	
 	private static BookingRequestBody request;
 	
 	private ResponseEntity<BookingResponseBody> booking;
+	
+	private Long createdId;
 	
 	@BeforeAll
 	void before() {
 		
 		LocalDate startDate = LocalDate.now().plusDays(minimumStartDate);
 		
-		LocalDate endDate = startDate.plusDays(maximumLengthOfStay);
+		LocalDate endDate = startDate.plusDays(maximumLengthOfStay - 1);
 		
 		String startDateString = startDate.format(DateTimeFormatter.ofPattern(DateUtil.DATE_PATTERN));
 		
 		String endDateString = endDate.format(DateTimeFormatter.ofPattern(DateUtil.DATE_PATTERN));
 		
 		request = new BookingRequestBody(1L, 1, startDateString, endDateString);
+	}
+	
+	@AfterAll
+	void after() {
+		
+		repository.deleteById(1L);
 	}
 	
 	@Test
@@ -101,6 +114,8 @@ public class BookingTests extends BookingApiApplicationTests {
 		assertEquals(1, response.getBody().size());
 		
 		assertEquals(response.getStatusCode(), HttpStatus.OK);
+		
+		createdId = response.getBody().stream().findAny().get().getId();
 	}
 	
 	@Test
@@ -108,13 +123,13 @@ public class BookingTests extends BookingApiApplicationTests {
 	@Order(3)
 	void getOne() throws GenericException, BusinessException {
 		
-		ResponseEntity<BookingResponseBody> response = service.get(1L);
+		ResponseEntity<BookingResponseBody> response = service.get(createdId);
 		
 		assertNotNull(response);
 		
 		assertNotNull(response.getBody());
 		
-		assertEquals(1L, response.getBody().getId());
+		assertEquals(createdId, response.getBody().getId());
 		
 		assertEquals(response.getStatusCode(), HttpStatus.OK);
 	}
@@ -126,7 +141,7 @@ public class BookingTests extends BookingApiApplicationTests {
 		
 		request.setUserId(0L);
 		
-		ResponseEntity<BookingResponseBody> response = service.update(1L, request);
+		ResponseEntity<BookingResponseBody> response = service.update(createdId, request);
 		
 		assertNotNull(response);
 		
@@ -142,9 +157,9 @@ public class BookingTests extends BookingApiApplicationTests {
 	@Order(5)
 	void cancel() throws GenericException, BusinessException {
 		
-		ResponseEntity<?> response = service.cancel(1L);
+		ResponseEntity<?> response = service.cancel(createdId);
 		
-		ResponseEntity<BookingResponseBody> booking = service.get(1L);
+		ResponseEntity<BookingResponseBody> booking = service.get(createdId);
 		
 		assertNotNull(booking);
 		

@@ -3,8 +3,6 @@
  */
 package com.alten.bookingapi.body.request;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
