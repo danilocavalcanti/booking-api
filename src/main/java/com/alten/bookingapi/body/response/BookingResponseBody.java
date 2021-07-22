@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.alten.bookingapi.model.Booking;
+import com.alten.bookingapi.model.BookingStatus;
 import com.alten.bookingapi.model.Room;
 import com.alten.bookingapi.model.User;
 import com.alten.bookingapi.util.DateUtil;
@@ -36,32 +37,36 @@ public class BookingResponseBody {
 	
 	private String endDate;
 	
-	public static List<BookingResponseBody> parse(List<Booking> bookingEntities) {
+	private BookingStatus status;
+	
+	public static List<BookingResponseBody> parse(List<Booking> entities) {
 		
-		if (Objects.isNull(bookingEntities) || bookingEntities.isEmpty()) return null;
+		if (Objects.isNull(entities) || entities.isEmpty()) return null;
 		
 		List<BookingResponseBody> bookings = new ArrayList<BookingResponseBody>();
 		
-		bookingEntities.forEach(entity -> bookings.add(parse(entity)));
+		entities.forEach(entity -> bookings.add(parse(entity)));
 		
 		return bookings;
 	}
 	
-	public static BookingResponseBody parse(Booking bookingEntity) {
+	public static BookingResponseBody parse(Booking entity) {
 		
-		if (Objects.isNull(bookingEntity)) return null;
+		if (Objects.isNull(entity)) return null;
 		
 		BookingResponseBody booking = new BookingResponseBody();
 		
-		booking.setUser(UserBodyResponse.parse(bookingEntity.getUser()));
+		booking.setUser(UserBodyResponse.parse(entity.getUser()));
 		
-		booking.setRoom(RoomBodyResponse.parse(bookingEntity.getRoom()));
+		booking.setRoom(RoomBodyResponse.parse(entity.getRoom()));
 		
-		booking.setId(bookingEntity.getId());
+		booking.setId(entity.getId());
 		
-		booking.setStartDate(DateUtil.toStringDate(bookingEntity.getStartDate()));
+		booking.setStartDate(DateUtil.toStringDate(entity.getStartDate()));
 		
-		booking.setEndDate(DateUtil.toStringDate(bookingEntity.getEndDate()));
+		booking.setEndDate(DateUtil.toStringDate(entity.getEndDate()));
+		
+		booking.setStatus(entity.getStatus());
 		
 		return booking;
 	}

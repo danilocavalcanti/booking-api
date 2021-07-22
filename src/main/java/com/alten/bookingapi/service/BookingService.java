@@ -62,6 +62,5 @@ public interface BookingService {
 	 * @throws GenericException
 	 * @throws BusinessException 
 	 */
-	public ResponseEntity<BookingResponseBody> update(Long id, BookingRequestBody booking) throws GenericException, BusinessException; 
-
+	public ResponseEntity<BookingResponseBody> update(Long id, BookingRequestBody booking) throws GenericException, BusinessException;
 }

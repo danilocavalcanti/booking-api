@@ -3,17 +3,15 @@
  */
 package com.alten.bookingapi.service.impl;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alten.bookingapi.body.request.BookingRequestBody;
 import com.alten.bookingapi.body.response.BookingResponseBody;
@@ -23,6 +21,7 @@ import com.alten.bookingapi.model.Booking;
 import com.alten.bookingapi.model.BookingRepository;
 import com.alten.bookingapi.model.BookingStatus;
 import com.alten.bookingapi.service.BookingService;
+import com.alten.bookingapi.validation.BookingValidations;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -34,17 +33,11 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class BookingServiceImpl implements BookingService {
 	
-	@Value("${booking.maximum-length-of-stay}")
-	private long maximumLengthOfStay;
-	
-	@Value("${booking.maximum-start-date-days-range}")
-	private long maximumStartDate;
-	
-	@Value("${booking.minimum-start-date-days-range}")
-	private long minimumStartDate;
-	
 	@Autowired
 	private BookingRepository repository;
+	
+	@Autowired
+	private BookingValidations validations;
 
 	@Override
 	public ResponseEntity<List<BookingResponseBody>> getAll() throws GenericException {
@@ -101,7 +94,7 @@ public class BookingServiceImpl implements BookingService {
 			
 			repository.save(booking);
 			
-			return (ResponseEntity<?>) ResponseEntity.noContent();
+			return ResponseEntity.noContent().build();
 			
 		} catch (BusinessException e) {
 			
@@ -118,6 +111,7 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	@Override
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public ResponseEntity<BookingResponseBody> create(BookingRequestBody booking) throws GenericException, BusinessException {
 		
 		log.info("Creating a new booking...");
@@ -128,9 +122,7 @@ public class BookingServiceImpl implements BookingService {
 			
 			Booking entity = booking.toEntity();
 			
-			validateLengthOfStay(entity);
-			
-			validateStartDate(entity);
+			validations.creation(entity);
 			
 			entity.setStatus(BookingStatus.ACTIVE);
 			
@@ -153,6 +145,7 @@ public class BookingServiceImpl implements BookingService {
 	}
 	
 	@Override
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public ResponseEntity<BookingResponseBody> update(Long id, BookingRequestBody booking) throws GenericException, BusinessException {
 		
 		log.info("Updating booking with id " + id);
@@ -165,9 +158,7 @@ public class BookingServiceImpl implements BookingService {
 			
 			Booking entity = booking.toEntity();
 			
-			validateLengthOfStay(entity);
-			
-			validateStartDate(entity);
+			validations.update(entity);
 			
 			entity.setId(id);
 			
@@ -187,29 +178,5 @@ public class BookingServiceImpl implements BookingService {
 			
 			throw new GenericException(e);
 		}
-	}
-	
-	/**
-	 * Check if the length of stay of the reservation is valid.
-	 * 
-	 */
-	private void validateLengthOfStay(Booking booking) throws BusinessException {
-		
-		long lengthOfStay = ChronoUnit.DAYS.between(booking.getStartDate(), booking.getEndDate());
-		
-		if (lengthOfStay > maximumLengthOfStay) throw new BusinessException(Set.of("The maximum length of stay limit of " + maximumLengthOfStay + " day(s) has been surpassed"));
-	}
-	
-	/**
-	 * Check if the start date is valid.
-	 * 
-	 */
-	private void validateStartDate(Booking booking) throws BusinessException {
-		
-		long daysBetweenStart = ChronoUnit.DAYS.between(LocalDate.now(), booking.getStartDate());
-		
-		if (daysBetweenStart > maximumStartDate) throw new BusinessException(Set.of("The start date can't surpass " + maximumStartDate + " day(s) from the current date"));
-		
-		if (daysBetweenStart < minimumStartDate) throw new BusinessException(Set.of("The start date must be at least " + minimumStartDate + " day(s) after the current date"));
 	}
 }

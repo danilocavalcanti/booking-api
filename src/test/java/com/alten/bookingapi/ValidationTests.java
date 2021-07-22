@@ -9,12 +9,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.alten.bookingapi.body.request.BookingRequestBody;
 import com.alten.bookingapi.exception.BusinessException;
+import com.alten.bookingapi.exception.GenericException;
 import com.alten.bookingapi.service.BookingService;
 import com.alten.bookingapi.util.DateUtil;
 
@@ -22,6 +28,8 @@ import com.alten.bookingapi.util.DateUtil;
  * @author Danilo Cavalcanti
  *
  */
+@TestMethodOrder(OrderAnnotation.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ValidationTests extends BookingApiApplicationTests {
 	
 	@Value("${booking.maximum-length-of-stay}")
@@ -36,7 +44,22 @@ public class ValidationTests extends BookingApiApplicationTests {
 	@Autowired
 	private BookingService service;
 	
+	@BeforeAll
+	void before() throws GenericException, BusinessException {
+		
+		LocalDate startDate = LocalDate.now().plusDays(minimumStartDate);
+		
+		LocalDate endDate = startDate.plusDays(maximumLengthOfStay);
+		
+		String startDateString = startDate.format(DateTimeFormatter.ofPattern(DateUtil.DATE_PATTERN));
+		
+		String endDateString = endDate.format(DateTimeFormatter.ofPattern(DateUtil.DATE_PATTERN));
+		
+		service.create(new BookingRequestBody(1L, 1, startDateString, endDateString));
+	}
+	
 	@Test
+	@Order(1)
 	void lengthOfStayTooLong() {
 		
 		LocalDate startDate = LocalDate.now();
@@ -55,6 +78,7 @@ public class ValidationTests extends BookingApiApplicationTests {
 	}
 	
 	@Test
+	@Order(2)
 	void startDateTooEarly() {
 		
 		LocalDate startDate = LocalDate.now().plusDays(maximumStartDate + 1);
@@ -73,6 +97,7 @@ public class ValidationTests extends BookingApiApplicationTests {
 	}
 	
 	@Test
+	@Order(3)
 	void startDateTooSoon() {
 		
 		LocalDate startDate = LocalDate.now();
@@ -88,6 +113,12 @@ public class ValidationTests extends BookingApiApplicationTests {
 		BusinessException exception = assertThrows(BusinessException.class, () -> service.create(booking));
 		
 		assertEquals(exception.getLocalizedMessage(), "The start date must be at least " + minimumStartDate + " day(s) after the current date");
+	}
+	
+	@Test
+	@Order(4)
+	void roomAlreadyBookedForTheGivenPeriod() {
+		
 	}
 
 }

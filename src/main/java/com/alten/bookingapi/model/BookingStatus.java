@@ -9,5 +9,5 @@ package com.alten.bookingapi.model;
  */
 public enum BookingStatus {
 
-	ACTIVE, INACTIVE, CANCELED;
+	ACTIVE, CANCELED;
 }

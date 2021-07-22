@@ -15,4 +15,4 @@ To run the application, use the following command lines:
 - The association between Room and Booking is one-to-many because it is being considered that the hotel has only 1 room, otherwise it should be many-to-many;
 - Security principles are being disregarded;
 - Bidirectional one-to-many is being used because it's more efficient and for that, ideally Room class should have methods like addBooking and removeBooking to sync both sides;
-- Booking status: ACTIVE, INACTIVE (expired or it has been used), CANCELED (user requested the cancellation)
+- Booking status: ACTIVE, CANCELED (user requested the cancellation)
