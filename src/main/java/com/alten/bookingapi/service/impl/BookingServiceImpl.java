@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alten.bookingapi.body.request.BookingRequestBody;
 import com.alten.bookingapi.body.response.BookingResponseBody;
 import com.alten.bookingapi.body.response.SuccessResponseBody;
+import com.alten.bookingapi.exception.BookingAPIException;
 import com.alten.bookingapi.exception.BusinessException;
 import com.alten.bookingapi.exception.GenericException;
 import com.alten.bookingapi.i18n.MessageBundle;
@@ -134,7 +135,7 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	@Override
-	@Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
+	@Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE, rollbackFor = BookingAPIException.class)
 	public ResponseEntity<SuccessResponseBody<BookingResponseBody>> create(BookingRequestBody booking) throws GenericException, BusinessException {
 		
 		log.info("Creating a new booking...");
@@ -149,7 +150,7 @@ public class BookingServiceImpl implements BookingService {
 			
 			entity.setStatus(BookingStatus.ACTIVE);
 			
-			Booking newBooking = repository.save(entity);
+			Booking newBooking = repository.saveAndFlush(entity);
 			
 			newBooking.setRoom(roomRepository.findById(newBooking.getRoom().getId()).orElse(null));
 			
@@ -172,6 +173,7 @@ public class BookingServiceImpl implements BookingService {
 	}
 	
 	@Override
+	@Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE, rollbackFor = BookingAPIException.class)
 	public ResponseEntity<SuccessResponseBody<BookingResponseBody>> update(Long id, BookingRequestBody booking) throws GenericException, BusinessException {
 		
 		log.info("Updating booking with id " + id);
@@ -179,18 +181,22 @@ public class BookingServiceImpl implements BookingService {
 		try {
 		
 			if (Objects.isNull(id)) throw new BusinessException(messages.get("0005"));
+			
+			Booking oldEntity = repository.findById(id).orElseThrow(() -> new BusinessException(String.format(messages.get("0006"), id)));
+			
+			if (oldEntity.getStatus().equals(BookingStatus.CANCELED)) throw new BusinessException(String.format(messages.get("0016"), id));
 
 			validations.validateRequest(booking);
 			
 			Booking entity = booking.toEntity();
 			
 			entity.setId(id);
+			
+			entity.setStatus(oldEntity.getStatus());
 
 			validations.validateBooking(entity);
 			
-			Booking newBooking = repository.save(entity);
-			
-			newBooking.setStatus(BookingStatus.ACTIVE);
+			Booking newBooking = repository.saveAndFlush(entity);
 			
 			return ResponseEntity.ok(new SuccessResponseBody<BookingResponseBody>().create(BookingResponseBody.parse(newBooking)));
 			
