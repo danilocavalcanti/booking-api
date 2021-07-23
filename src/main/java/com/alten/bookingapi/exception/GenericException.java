@@ -1,5 +1,6 @@
 package com.alten.bookingapi.exception;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,9 @@ public class GenericException extends BookingAPIException {
 		
 		super(message);
 
-		setMessages(Set.of(message));
+		Set<String> messages = new HashSet<String>();
+		
+		messages.add(message);
 		
 		setStatusCode(DEFAULT_STATUS_CODE);
 	}
@@ -40,7 +43,9 @@ public class GenericException extends BookingAPIException {
 		
 		super(e.getLocalizedMessage());
 
-		setMessages(Set.of(e.getLocalizedMessage()));
+		Set<String> messages = new HashSet<String>();
+		
+		messages.add(e.getLocalizedMessage());
 		
 		setStatusCode(DEFAULT_STATUS_CODE);
 	}
@@ -49,7 +54,9 @@ public class GenericException extends BookingAPIException {
 		
 		super(e.getLocalizedMessage());
 
-		setMessages(Set.of(e.getLocalizedMessage()));
+		Set<String> messages = new HashSet<String>();
+		
+		messages.add(e.getLocalizedMessage());
 
 		setStatusCode(statusCode);
 	}
@@ -58,7 +65,9 @@ public class GenericException extends BookingAPIException {
 		
 		super(e.getLocalizedMessage());
 
-		setMessages(Set.of(e.getLocalizedMessage()));
+		Set<String> messages = new HashSet<String>();
+		
+		messages.add(e.getLocalizedMessage());
 
 		setStatusCode(HttpStatus.resolve(statusCode));
 	}

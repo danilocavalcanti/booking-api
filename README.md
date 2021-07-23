@@ -4,9 +4,20 @@ This API was designed and developed to provide services for booking a room in Ca
 
 # Instructions
 
+There is a Postman collection in project root folder.
+
+There is a Dockerfile in project root folder.
+
+To build the aplication using Maven:
+- mvn clean install
+
+To build the application using Maven and skipping tests:
+- mvn clean install -DskipTests
+
 To run the application, use the following command lines:
 
-- Java: java 
+- Docker:  
+- Java:
 - Maven: 
 
 # Notes

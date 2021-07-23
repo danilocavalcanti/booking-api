@@ -1,5 +1,6 @@
 package com.alten.bookingapi.exception;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.http.HttpStatus;
@@ -30,8 +31,12 @@ public class BusinessException extends BookingAPIException {
 	public BusinessException(String message, HttpStatus statusCode) {
 		
 		super(message);
+		
+		Set<String> messages = new HashSet<String>();
+		
+		messages.add(message);
 
-		setMessages(Set.of(message));
+		setMessages(messages);
 		
 		setStatusCode(statusCode);
 		
@@ -52,7 +57,11 @@ public class BusinessException extends BookingAPIException {
 		
 		super(message);
 
-		setMessages(Set.of(message));
+		Set<String> messages = new HashSet<String>();
+		
+		messages.add(message);
+
+		setMessages(messages);
 		
 		setStatusCode(DEFAULT_STATUS_CODE);
 	}
@@ -61,7 +70,11 @@ public class BusinessException extends BookingAPIException {
 		
 		super(e.getLocalizedMessage());
 
-		setMessages(Set.of(e.getLocalizedMessage()));
+		Set<String> messages = new HashSet<String>();
+		
+		messages.add(e.getLocalizedMessage());
+
+		setMessages(messages);
 		
 		setStatusCode(DEFAULT_STATUS_CODE);
 	}
@@ -70,7 +83,9 @@ public class BusinessException extends BookingAPIException {
 		
 		super(e.getLocalizedMessage());
 
-		setMessages(Set.of(e.getLocalizedMessage()));
+		Set<String> messages = new HashSet<String>();
+		
+		messages.add(e.getLocalizedMessage());
 		
 		setStatusCode(statusCode);
 	}
@@ -79,7 +94,9 @@ public class BusinessException extends BookingAPIException {
 		
 		super(e.getLocalizedMessage());
 
-		setMessages(Set.of(e.getLocalizedMessage()));
+		Set<String> messages = new HashSet<String>();
+		
+		messages.add(e.getLocalizedMessage());
 		
 		setStatusCode(HttpStatus.resolve(statusCode));
 	}

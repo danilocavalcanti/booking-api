@@ -135,7 +135,7 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	@Override
-	@Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE, rollbackFor = BookingAPIException.class)
+	@Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE, rollbackFor = {Exception.class, BookingAPIException.class})
 	public ResponseEntity<SuccessResponseBody<BookingResponseBody>> create(BookingRequestBody booking) throws GenericException, BusinessException {
 		
 		log.info("Creating a new booking...");
@@ -150,7 +150,7 @@ public class BookingServiceImpl implements BookingService {
 			
 			entity.setStatus(BookingStatus.ACTIVE);
 			
-			Booking newBooking = repository.saveAndFlush(entity);
+			Booking newBooking = repository.save(entity);
 			
 			newBooking.setRoom(roomRepository.findById(newBooking.getRoom().getId()).orElse(null));
 			
@@ -173,7 +173,7 @@ public class BookingServiceImpl implements BookingService {
 	}
 	
 	@Override
-	@Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE, rollbackFor = BookingAPIException.class)
+	@Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE, rollbackFor = {Exception.class, BookingAPIException.class})
 	public ResponseEntity<SuccessResponseBody<BookingResponseBody>> update(Long id, BookingRequestBody booking) throws GenericException, BusinessException {
 		
 		log.info("Updating booking with id " + id);
@@ -196,7 +196,7 @@ public class BookingServiceImpl implements BookingService {
 
 			validations.validateBooking(entity);
 			
-			Booking newBooking = repository.saveAndFlush(entity);
+			Booking newBooking = repository.save(entity);
 			
 			return ResponseEntity.ok(new SuccessResponseBody<BookingResponseBody>().create(BookingResponseBody.parse(newBooking)));
 			

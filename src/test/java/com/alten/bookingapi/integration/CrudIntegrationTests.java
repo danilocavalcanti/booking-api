@@ -6,8 +6,8 @@ package com.alten.bookingapi.integration;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,7 +62,7 @@ public class CrudIntegrationTests extends BookingIntegrationTests {
 	void create() throws Exception {
 		
 		Mockito.when(repository.save(Mockito.any(Booking.class))).thenReturn(mockedActiveBooking);
-		
+
 		mockMvc.perform(post("/bookings")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{"
@@ -79,7 +80,11 @@ public class CrudIntegrationTests extends BookingIntegrationTests {
 	@Order(2)
 	void getAll() throws Exception {
 		
-		Mockito.when(repository.findAll()).thenReturn(List.of(mockedActiveBooking));
+		List<Booking> expected = new ArrayList<Booking>();
+		
+		expected.add(mockedActiveBooking);
+		
+		Mockito.when(repository.findAll()).thenReturn(expected);
 		
 		mockMvc.perform(get("/bookings")
 				.contentType(MediaType.APPLICATION_JSON))
@@ -115,6 +120,8 @@ public class CrudIntegrationTests extends BookingIntegrationTests {
 		
 		Mockito.when(repository.save(Mockito.any(Booking.class)))
 			.thenReturn(new Booking(1L, new Room(1), new User(1L), newStartDate, newEndDate, BookingStatus.ACTIVE));
+		
+		Mockito.when(repository.findById(Mockito.any(Long.class))).thenReturn(Optional.of(new Booking(1L, new Room(1), new User(1L), newStartDate, newEndDate, BookingStatus.ACTIVE)));
 		
 		mockMvc.perform(patch("/bookings/1")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -154,10 +161,18 @@ public class CrudIntegrationTests extends BookingIntegrationTests {
 	@Order(6)
 	void checkAvailability() throws Exception {
 		
+		LocalDate newStartDate = LocalDate.now().plusDays(minimumStartDate + 2 * maximumLengthOfStay);
+		
+		LocalDate newEndDate = newStartDate.plusDays(maximumLengthOfStay - 1);
+		
+		String newStartDateString = newStartDate.format(DateTimeFormatter.ofPattern(DateUtil.DATE_PATTERN));
+		
+		String newEndDateString = newEndDate.format(DateTimeFormatter.ofPattern(DateUtil.DATE_PATTERN));
+		
 		Mockito.when(repository.findByPeriod(Mockito.any(Integer.class), Mockito.any(LocalDate.class), Mockito.any(LocalDate.class)))
 		.thenReturn(Optional.ofNullable(null));
 		
-		mockMvc.perform(head("/bookings?startDate=2099-01-01&endDate=2099-01-01&roomId=1"))
+		mockMvc.perform(head("/bookings?startDate=" + newStartDateString + "&endDate=" + newEndDateString + "&roomId=1"))
 				.andExpect(status().isOk());
 	}
 	
@@ -165,10 +180,22 @@ public class CrudIntegrationTests extends BookingIntegrationTests {
 	@Order(6)
 	void checkNoAvailability() throws Exception {
 		
-		Mockito.when(repository.findByPeriod(Mockito.any(Integer.class), Mockito.any(LocalDate.class), Mockito.any(LocalDate.class)))
-		.thenReturn(Optional.of(List.of(new Booking())));
+		LocalDate newStartDate = LocalDate.now().plusDays(minimumStartDate + 2 * maximumLengthOfStay);
 		
-		mockMvc.perform(head("/bookings?startDate=2099-01-01&endDate=2099-01-01&roomId=1"))
+		LocalDate newEndDate = newStartDate.plusDays(maximumLengthOfStay - 1);
+		
+		String newStartDateString = newStartDate.format(DateTimeFormatter.ofPattern(DateUtil.DATE_PATTERN));
+		
+		String newEndDateString = newEndDate.format(DateTimeFormatter.ofPattern(DateUtil.DATE_PATTERN));
+		
+		List<Booking> expected = new ArrayList<Booking>();
+		
+		expected.add(new Booking());
+		
+		Mockito.when(repository.findByPeriod(Mockito.any(Integer.class), Mockito.any(LocalDate.class), Mockito.any(LocalDate.class)))
+		.thenReturn(Optional.of(expected));
+		
+		mockMvc.perform(head("/bookings?startDate=" + newStartDateString + "&endDate=" + newEndDateString + "&roomId=1"))
 				.andExpect(status().isConflict());
 	}
 

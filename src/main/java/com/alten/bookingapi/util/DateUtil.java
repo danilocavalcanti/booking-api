@@ -18,7 +18,7 @@ public class DateUtil {
 	
 	public static boolean isValid(String date) {
 		
-		if (Objects.isNull(date) || date.isBlank()) return false;
+		if (Objects.isNull(date) || date.trim().isEmpty()) return false;
 
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DATE_PATTERN);
 

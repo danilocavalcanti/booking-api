@@ -17,7 +17,9 @@ import com.alten.bookingapi.model.Booking;
 import com.alten.bookingapi.model.BookingRepository;
 import com.alten.bookingapi.model.BookingStatus;
 import com.alten.bookingapi.model.Room;
+import com.alten.bookingapi.model.RoomRepository;
 import com.alten.bookingapi.model.User;
+import com.alten.bookingapi.model.UserRepository;
 import com.alten.bookingapi.service.impl.BookingServiceImpl;
 import com.alten.bookingapi.util.DateUtil;
 import com.alten.bookingapi.validation.BookingValidations;
@@ -37,6 +39,12 @@ public class BookingIntegrationTests {
 
 	@MockBean
 	protected BookingRepository repository;
+	
+	@MockBean
+	protected UserRepository userRepository;
+	
+	@MockBean
+	protected RoomRepository roomRepository;
 	
 	private BookingRequestBody request;
 	
