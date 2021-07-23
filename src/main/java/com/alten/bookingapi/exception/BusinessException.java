@@ -27,6 +27,17 @@ public class BusinessException extends BookingAPIException {
 
 	private HttpStatus statusCode;
 	
+	public BusinessException(String message, HttpStatus statusCode) {
+		
+		super(message);
+
+		setMessages(Set.of(message));
+		
+		setStatusCode(statusCode);
+		
+		setStatusCode(DEFAULT_STATUS_CODE);
+	}
+	
 	public BusinessException(Set<String> messages) {
 
 		super(String.join(" | ", messages));

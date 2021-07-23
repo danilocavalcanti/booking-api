@@ -9,22 +9,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 
 import com.alten.bookingapi.body.request.BookingRequestBody;
-import com.alten.bookingapi.body.response.BookingResponseBody;
 import com.alten.bookingapi.exception.BusinessException;
 import com.alten.bookingapi.exception.GenericException;
-import com.alten.bookingapi.model.BookingRepository;
 import com.alten.bookingapi.service.BookingService;
 import com.alten.bookingapi.util.DateUtil;
 
@@ -32,9 +24,7 @@ import com.alten.bookingapi.util.DateUtil;
  * @author Danilo Cavalcanti
  *
  */
-@TestMethodOrder(OrderAnnotation.class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ValidationTests extends BookingApiApplicationTests {
+public class ValidationUnitTests extends BookingUnitTests {
 	
 	@Value("${booking.maximum-length-of-stay}")
 	private long maximumLengthOfStay;
@@ -47,38 +37,6 @@ public class ValidationTests extends BookingApiApplicationTests {
 	
 	@Autowired
 	private BookingService service;
-	
-	@Autowired
-	private BookingRepository repository;
-	
-	private Long createdId;
-	
-	@BeforeAll
-	void before() throws GenericException, BusinessException {
-		
-		create();
-	}
-	
-	private void create() throws GenericException, BusinessException {
-		
-		LocalDate startDate = LocalDate.now().plusDays(minimumStartDate);
-		
-		LocalDate endDate = startDate.plusDays(maximumLengthOfStay - 1);
-		
-		String startDateString = startDate.format(DateTimeFormatter.ofPattern(DateUtil.DATE_PATTERN));
-		
-		String endDateString = endDate.format(DateTimeFormatter.ofPattern(DateUtil.DATE_PATTERN));
-		
-		ResponseEntity<BookingResponseBody> response = service.create(new BookingRequestBody(1L, 1, startDateString, endDateString));
-		
-		createdId = response.getBody().getId();
-	}
-	
-	@AfterAll
-	void after() {
-		
-		repository.deleteById(createdId);
-	}
 	
 	@Test
 	@Order(1)
@@ -139,9 +97,11 @@ public class ValidationTests extends BookingApiApplicationTests {
 	
 	@Test
 	@Order(4)
-	void roomAlreadyBookedForTheGivenPeriodWhenCreating() {
+	void roomAlreadyBookedForTheGivenPeriodWhenCreating() throws GenericException, BusinessException {
 		
-		assertThrows(BusinessException.class, () -> create());
+		createBooking();
+		
+		assertThrows(BusinessException.class, () -> createBooking());
 	}
 	
 	@Test
@@ -158,7 +118,7 @@ public class ValidationTests extends BookingApiApplicationTests {
 		
 		service.create(new BookingRequestBody(0L, 1, startDateString, endDateString));
 		
-		assertThrows(BusinessException.class, () -> service.update(createdId, new BookingRequestBody(1L, 1, startDateString, endDateString)));
+		assertThrows(BusinessException.class, () -> service.update(getCreatedId(), new BookingRequestBody(1L, 1, startDateString, endDateString)));
 	}
 
 }

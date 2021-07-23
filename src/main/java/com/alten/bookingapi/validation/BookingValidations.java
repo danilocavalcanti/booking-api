@@ -5,24 +5,35 @@ package com.alten.bookingapi.validation;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alten.bookingapi.body.request.BookingRequestBody;
 import com.alten.bookingapi.exception.BusinessException;
+import com.alten.bookingapi.i18n.MessageBundle;
 import com.alten.bookingapi.model.Booking;
 import com.alten.bookingapi.model.BookingRepository;
+import com.alten.bookingapi.util.DateUtil;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * @author Danilo Cavalcanti
  *
  */
 @Component
+@Log4j2
 public class BookingValidations {
 	
 	@Value("${booking.maximum-length-of-stay}")
@@ -37,6 +48,9 @@ public class BookingValidations {
 	@Autowired
 	private BookingRepository repository;
 	
+	@Autowired
+	private MessageBundle messages;
+	
 	/**
 	 * Perform validations for a bookings creations
 	 * 
@@ -44,29 +58,101 @@ public class BookingValidations {
 	 * @throws BusinessException 
 	 */
 	@Transactional(propagation = Propagation.REQUIRED)
-	public void validateCreation(Booking booking) throws BusinessException {
+	public void validateBooking(Booking booking) throws BusinessException {
 		
-		validateLengthOfStay(booking);
+		log.info("Validating booking creation...");
 		
-		validateStartDate(booking);
+		validateLengthOfStay(booking.getStartDate(), booking.getEndDate());
 		
-		validateDatesAvailability(booking, false);
+		validateStartDate(booking.getStartDate());
+		
+		validateDatesAvailability(booking.getRoom().getId(), booking.getStartDate(), booking.getEndDate());
 	}
 	
 	/**
-	 * Perform validations for a bookings updates
+	 * Validate request
 	 * 
 	 * @param booking
 	 * @throws BusinessException 
 	 */
-	@Transactional(propagation = Propagation.REQUIRED)
-	public void validateUpdate(Booking booking) throws BusinessException {
+	public void validateRequest(BookingRequestBody booking) throws BusinessException {
 		
-		validateLengthOfStay(booking);
+			Set<String> bodyMessages = new HashSet<>();
+
+			if (Objects.isNull(booking)) {
+
+				bodyMessages.add(messages.get("0008"));
+
+				throw new BusinessException(bodyMessages);
+			}
+
+			if (Objects.isNull(booking.getUserId()))
+				bodyMessages.add(messages.get("0009"));
+
+			if (Objects.isNull(booking.getRoomId()))
+				bodyMessages.add(messages.get("0010"));
+
+			if (Objects.isNull(booking.getStartDate()))
+				bodyMessages.add(messages.get("0011"));
+
+			if (!DateUtil.isValid(booking.getStartDate()))
+				bodyMessages.add(messages.get("0012"));
+
+			if (Objects.isNull(booking.getEndDate()))
+				bodyMessages.add(messages.get("0013"));
+
+			if (!DateUtil.isValid(booking.getEndDate()))
+				bodyMessages.add(messages.get("0014"));
+			
+			LocalDate startDate = DateUtil.toLocalDate(booking.getStartDate());
+			
+			LocalDate endDate = DateUtil.toLocalDate(booking.getEndDate());
+			
+			if (startDate.isEqual(endDate)) throw new BusinessException(messages.get("0007"));
+			
+			if (endDate.isBefore(startDate)) throw new BusinessException(messages.get("0015"));
+			
+			if (bodyMessages.size() > 0)
+				throw new BusinessException(bodyMessages);
+	}
+	
+	/**
+	 * Validate the dates
+	 * 
+	 * @param startDate
+	 * @throws BusinessException 
+	 */
+	public void validateDates(String startDateStr, String endDateStr) throws BusinessException {
 		
-		validateStartDate(booking);
+		Set<String> bodyMessages = new HashSet<>();
 		
-		validateDatesAvailability(booking, true);
+		if (!DateUtil.isValid(startDateStr)) throw new BusinessException(messages.get("0007"));
+		
+		if (!DateUtil.isValid(startDateStr)) throw new BusinessException(messages.get("0007"));
+		
+		if (Objects.isNull(startDateStr))
+			bodyMessages.add(messages.get("0011"));
+
+		if (!DateUtil.isValid(startDateStr))
+			bodyMessages.add(messages.get("0012"));
+
+		if (Objects.isNull(endDateStr))
+			bodyMessages.add(messages.get("0013"));
+
+		if (!DateUtil.isValid(endDateStr))
+			bodyMessages.add(messages.get("0014"));
+		
+		LocalDate startDate = DateUtil.toLocalDate(startDateStr);
+		
+		LocalDate endDate = DateUtil.toLocalDate(endDateStr);
+		
+		if (startDate.isEqual(endDate)) throw new BusinessException(messages.get("0007"));
+		
+		if (endDate.isBefore(startDate)) throw new BusinessException(messages.get("0015"));
+		
+		validateLengthOfStay(startDate, endDate);
+		
+		validateStartDate(startDate);
 	}
 	
 	/**
@@ -76,26 +162,29 @@ public class BookingValidations {
 	 * @param booking
 	 * @throws BusinessException
 	 */
-	public void validateLengthOfStay(Booking booking) throws BusinessException {
+	public void validateLengthOfStay(LocalDate startDate, LocalDate endDate) throws BusinessException {
 		
-		long lengthOfStay = ChronoUnit.DAYS.between(booking.getStartDate(), booking.getEndDate());
+		log.info("Validating booking length of stay...");
 		
-		if (lengthOfStay > maximumLengthOfStay - 1) throw new BusinessException(Set.of("The maximum length of stay limit of " + maximumLengthOfStay + " day(s) has been surpassed"));
+		long lengthOfStay = ChronoUnit.DAYS.between(startDate, endDate);
+		
+		if (lengthOfStay > maximumLengthOfStay - 1) throw new BusinessException(String.format(messages.get("0001"), maximumLengthOfStay));
 	}
 	
 	/**
 	 * Validate if the start date is valid.
 	 * Days between - 1 considering the first day.
-	 * @param booking
 	 * @throws BusinessException
 	 */
-	private void validateStartDate(Booking booking) throws BusinessException {
+	private void validateStartDate(LocalDate startDate) throws BusinessException {
 		
-		long daysBetweenStart = ChronoUnit.DAYS.between(LocalDate.now(), booking.getStartDate());
+		log.info("Validating booking start date...");
 		
-		if (daysBetweenStart > maximumStartDate) throw new BusinessException(Set.of("The start date can't surpass " + maximumStartDate + " day(s) from the current date"));
+		long daysBetweenStart = ChronoUnit.DAYS.between(LocalDate.now(), startDate);
 		
-		if (daysBetweenStart < minimumStartDate) throw new BusinessException(Set.of("The start date must be at least " + minimumStartDate + " day(s) after the current date"));
+		if (daysBetweenStart > maximumStartDate) throw new BusinessException(String.format(messages.get("0002"), maximumStartDate));
+		
+		if (daysBetweenStart < minimumStartDate) throw new BusinessException(String.format(messages.get("0003"), minimumStartDate));
 	}
 	
 	/**
@@ -105,18 +194,14 @@ public class BookingValidations {
 	 * @throws BusinessException
 	 */
 	@Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE)
-	private void validateDatesAvailability(Booking booking, boolean isUpdate) throws BusinessException {
+	private void validateDatesAvailability(Integer roomId, LocalDate startDate, LocalDate endDate) throws BusinessException {
 		
-		if (isUpdate) {
+		log.info("Validating booking dates availability...");
+		
+			Optional<List<Booking>> result = repository.findByPeriod(roomId, startDate, endDate);
 			
-			if (repository.findByPeriod(booking.getId(), booking.getRoom().getId(), booking.getStartDate(), booking.getEndDate()).isPresent())
-				throw new BusinessException("The room is unvailable for the given period");
-			
-		} else {
-			
-			if (repository.findByPeriod(booking.getRoom().getId(), booking.getStartDate(), booking.getEndDate()).isPresent())
-				throw new BusinessException("The room is unvailable for the given period");
-		}
+			if (result.isPresent() && result.get().size() > 0)
+				throw new BusinessException(messages.get("0004"), HttpStatus.CONFLICT);
 	}
 
 }

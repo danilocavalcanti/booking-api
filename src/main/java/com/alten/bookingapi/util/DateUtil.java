@@ -15,8 +15,10 @@ import java.util.Objects;
 public class DateUtil {
 
 	public static final String DATE_PATTERN = "yyyy-MM-dd";
-
+	
 	public static boolean isValid(String date) {
+		
+		if (Objects.isNull(date) || date.isBlank()) return false;
 
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DATE_PATTERN);
 

@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.alten.bookingapi.body.request.BookingRequestBody;
 import com.alten.bookingapi.body.response.BookingResponseBody;
+import com.alten.bookingapi.body.response.SuccessResponseBody;
 import com.alten.bookingapi.exception.BusinessException;
 import com.alten.bookingapi.exception.GenericException;
 
@@ -19,12 +20,24 @@ import com.alten.bookingapi.exception.GenericException;
 public interface BookingService {
 	
 	/**
+	 * Check dates availability
+	 * 
+	 * @param startDate
+	 * @param endDate
+	 * @param roomId
+	 * @return
+	 * @throws GenericException
+	 * @throws BusinessException 
+	 */
+	public ResponseEntity<?> checkDatesAvailability(String startDate, String endDate, Integer roomId) throws GenericException, BusinessException;
+	
+	/**
 	 * Retrieve all the bookings.
 	 * 
 	 * @return
 	 * @throws GenericException
 	 */
-	public ResponseEntity<List<BookingResponseBody>> getAll() throws GenericException;
+	public ResponseEntity<SuccessResponseBody<List<BookingResponseBody>>> getAll() throws GenericException;
 	
 	/**
 	 * Retrieve one specific booking.
@@ -34,7 +47,7 @@ public interface BookingService {
 	 * @throws BusinessException
 	 * @throws GenericException
 	 */
-	public ResponseEntity<BookingResponseBody> get(Long id) throws GenericException, BusinessException; 
+	public ResponseEntity<SuccessResponseBody<BookingResponseBody>> get(Long id) throws GenericException, BusinessException; 
 	
 	/**
 	 * Delete one specific booking.
@@ -53,7 +66,7 @@ public interface BookingService {
 	 * @throws GenericException
 	 * @throws BusinessException 
 	 */
-	public ResponseEntity<BookingResponseBody> create(BookingRequestBody booking) throws GenericException, BusinessException; 
+	public ResponseEntity<SuccessResponseBody<BookingResponseBody>> create(BookingRequestBody booking) throws GenericException, BusinessException; 
 	
 	/**
 	 * Reschedule an existing booking.
@@ -62,5 +75,5 @@ public interface BookingService {
 	 * @throws GenericException
 	 * @throws BusinessException 
 	 */
-	public ResponseEntity<BookingResponseBody> update(Long id, BookingRequestBody booking) throws GenericException, BusinessException;
+	public ResponseEntity<SuccessResponseBody<BookingResponseBody>> update(Long id, BookingRequestBody booking) throws GenericException, BusinessException;
 }
