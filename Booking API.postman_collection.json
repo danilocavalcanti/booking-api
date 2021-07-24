@@ -15,13 +15,14 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://localhost:8080/bookings",
+					"raw": "http://localhost:8080/api/bookings",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"api",
 						"bookings"
 					]
 				}
@@ -42,16 +43,17 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"roomId\": 1,\n\t\"userId\": 1,\n\t\"startDate\": \"2021-07-27\",\n\t\"endDate\": \"2021-07-29\"\n}"
+					"raw": "{\n\t\"roomId\": 1,\n\t\"userId\": 1,\n\t\"startDate\": \"2021-07-26\",\n\t\"endDate\": \"2021-07-27\"\n}"
 				},
 				"url": {
-					"raw": "http://localhost:8080/bookings",
+					"raw": "http://localhost:8080/api/bookings",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"api",
 						"bookings"
 					]
 				}
@@ -68,13 +70,14 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://localhost:8080/bookings/1",
+					"raw": "http://localhost:8080/api/bookings/1",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"api",
 						"bookings",
 						"1"
 					]
@@ -92,13 +95,14 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://localhost:8080/bookings?roomId=1&startDate=2021-07-26&endDate=2021-07-27",
+					"raw": "http://localhost:8080/api/bookings?roomId=1&startDate=2021-07-26&endDate=2021-07-27",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"api",
 						"bookings"
 					],
 					"query": [
@@ -129,13 +133,46 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://localhost:8080/bookings/1",
+					"raw": "http://localhost:8080/api/bookings/1",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"api",
+						"bookings",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Modify dates",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"roomId\": 1,\n\t\"userId\": 1,\n\t\"startDate\": \"2021-07-24\",\n\t\"endDate\": \"2021-07-25\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/bookings/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
 						"bookings",
 						"1"
 					]

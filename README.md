@@ -8,17 +8,20 @@ There is a Postman collection in project root folder.
 
 There is a Dockerfile in project root folder.
 
-To build the aplication using Maven:
+1 - Build the aplication using Maven:
 - mvn clean install
 
-To build the application using Maven and skipping tests:
-- mvn clean install -DskipTests
+2 - Run image using Docker:
+- docker-compose up --build 
 
-To run the application, use the following command lines:
+Base path: http://localhost:8080/api
 
-- Docker:  
-- Java:
-- Maven: 
+# Internacionalization
+You can choose between English and French for business messages. By default, English is used.
+
+Usage:
+
+Query param "lang" = "en" or "fr". Example: http://localhost:8080/api/bookings?lang=fr or simply http://localhost:8080/api/bookings (english)
 
 # Notes
 
