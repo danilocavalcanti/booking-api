@@ -108,8 +108,6 @@ public class BookingValidations {
 			
 			LocalDate endDate = DateUtil.toLocalDate(booking.getEndDate());
 			
-			if (startDate.isEqual(endDate)) throw new BusinessException(messages.get("0007"));
-			
 			if (endDate.isBefore(startDate)) throw new BusinessException(messages.get("0015"));
 			
 			if (bodyMessages.size() > 0)
@@ -126,9 +124,9 @@ public class BookingValidations {
 		
 		Set<String> bodyMessages = new HashSet<>();
 		
-		if (!DateUtil.isValid(startDateStr)) throw new BusinessException(messages.get("0007"));
+		if (!DateUtil.isValid(startDateStr)) throw new BusinessException(messages.get("0012"));
 		
-		if (!DateUtil.isValid(startDateStr)) throw new BusinessException(messages.get("0007"));
+		if (!DateUtil.isValid(endDateStr)) throw new BusinessException(messages.get("0014"));
 		
 		if (Objects.isNull(startDateStr))
 			bodyMessages.add(messages.get("0011"));
@@ -145,8 +143,6 @@ public class BookingValidations {
 		LocalDate startDate = DateUtil.toLocalDate(startDateStr);
 		
 		LocalDate endDate = DateUtil.toLocalDate(endDateStr);
-		
-		if (startDate.isEqual(endDate)) throw new BusinessException(messages.get("0007"));
 		
 		if (endDate.isBefore(startDate)) throw new BusinessException(messages.get("0015"));
 		

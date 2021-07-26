@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -172,7 +171,7 @@ public class CrudIntegrationTests extends BookingIntegrationTests {
 		Mockito.when(repository.findByPeriod(Mockito.any(Integer.class), Mockito.any(LocalDate.class), Mockito.any(LocalDate.class)))
 		.thenReturn(Optional.ofNullable(null));
 		
-		mockMvc.perform(head("/bookings?startDate=" + newStartDateString + "&endDate=" + newEndDateString + "&roomId=1"))
+		mockMvc.perform(get("/bookings/availabilities?startDate=" + newStartDateString + "&endDate=" + newEndDateString + "&roomId=1"))
 				.andExpect(status().isOk());
 	}
 	
@@ -195,7 +194,7 @@ public class CrudIntegrationTests extends BookingIntegrationTests {
 		Mockito.when(repository.findByPeriod(Mockito.any(Integer.class), Mockito.any(LocalDate.class), Mockito.any(LocalDate.class)))
 		.thenReturn(Optional.of(expected));
 		
-		mockMvc.perform(head("/bookings?startDate=" + newStartDateString + "&endDate=" + newEndDateString + "&roomId=1"))
+		mockMvc.perform(get("/bookings/availabilities?startDate=" + newStartDateString + "&endDate=" + newEndDateString + "&roomId=1"))
 				.andExpect(status().isConflict());
 	}
 

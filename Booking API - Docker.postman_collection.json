@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "689928a2-7205-4326-a931-f0b05c7f6f1e",
-		"name": "Booking API",
+		"_postman_id": "eef601ed-aea4-44a5-bb14-0d1fc619a9e3",
+		"name": "Booking API - Docker",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -88,14 +88,14 @@
 		{
 			"name": "Check availbility",
 			"request": {
-				"method": "HEAD",
+				"method": "GET",
 				"header": [],
 				"body": {
 					"mode": "raw",
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://localhost:8080/api/bookings?roomId=1&startDate=2021-07-26&endDate=2021-07-27",
+					"raw": "http://localhost:8080/api/bookings/availabilities?roomId=1&startDate=2021-07-26&endDate=2021-07-27",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -103,7 +103,8 @@
 					"port": "8080",
 					"path": [
 						"api",
-						"bookings"
+						"bookings",
+						"availabilities"
 					],
 					"query": [
 						{
@@ -179,6 +180,28 @@
 				}
 			},
 			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "f8df4f91-002d-4f25-826b-11118f77ff7a",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "c4e66c72-c526-4ff5-a316-78d89e2fff11",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
 		}
 	]
 }
